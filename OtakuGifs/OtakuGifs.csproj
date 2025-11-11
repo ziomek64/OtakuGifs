@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+
+        <!-- NuGet Package Metadata -->
+        <PackageId>OtakuGifs</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>ziomek64</Authors>
+        <Company>ziomek64</Company>
+        <Description>A .NET client library for the OtakuGIFs API - fetch anime reaction GIFs easily</Description>
+        <PackageTags>anime;gif;reaction;api;otaku;client</PackageTags>
+        <RepositoryUrl>https://github.com/ziomek64/OtakuGifs</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/ziomek64/OtakuGifs</PackageProjectUrl>
+        <PackageIcon>icon.png</PackageIcon>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json" Version="10.0.0" />
+    </ItemGroup>
+
+</Project>
