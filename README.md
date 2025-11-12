@@ -156,7 +156,7 @@ The library includes 76+ reaction types:
 Fetches a random GIF based on the specified reaction.
 
 ```csharp
-Task<OtakugifsResponse> GetGifAsync(
+Task<OtakuGifsResponse> GetGifAsync(
     OtakuGifReaction reaction,
     OtakuGifFormat format = OtakuGifFormat.GIF,
     CancellationToken cancellationToken = default

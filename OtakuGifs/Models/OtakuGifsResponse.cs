@@ -1,6 +1,9 @@
 ﻿namespace OtakuGifs.Models;
 
-public class OtakugifsResponse
+/// <summary>
+/// Response model containing the URL of a GIF returned by the OtakuGIFs API
+/// </summary>
+public class OtakuGifsResponse
 {
     /// <summary>
     /// URL of the image returned by the API

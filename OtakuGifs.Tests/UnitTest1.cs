@@ -21,7 +21,7 @@ public class OtakuGifsClientTests
     {
         // Arrange
         var expectedUrl = "https://cdn.otakugifs.xyz/gifs/kiss/d7e51440.gif";
-        var response = new OtakugifsResponse { Url = expectedUrl };
+        var response = new OtakuGifsResponse { Url = expectedUrl };
         var httpClient = CreateMockHttpClient(HttpStatusCode.OK, JsonSerializer.Serialize(response));
         var client = new OtakuGifsClient(httpClient);
 
@@ -37,7 +37,7 @@ public class OtakuGifsClientTests
     public async Task GetGifAsync_WithDifferentFormat_UsesCorrectParameter()
     {
         // Arrange
-        var response = new OtakugifsResponse { Url = "https://cdn.otakugifs.xyz/gifs/hug/test.webp" };
+        var response = new OtakuGifsResponse { Url = "https://cdn.otakugifs.xyz/gifs/hug/test.webp" };
         var mockHandler = new Mock<HttpMessageHandler>();
         mockHandler
             .Protected()

@@ -14,9 +14,24 @@ namespace OtakuGifs.Client;
 /// </summary>
 public class OtakuGifsClient : IDisposable
 {
+    /// <summary>
+    /// Base URL for the OtakuGIFs API
+    /// </summary>
     private const string BaseUrl = "https://api.otakugifs.xyz";
+
+    /// <summary>
+    /// HTTP client used for API requests
+    /// </summary>
     private readonly HttpClient _httpClient;
+
+    /// <summary>
+    /// Indicates whether the HTTP client should be disposed when this client is disposed
+    /// </summary>
     private readonly bool _disposeHttpClient;
+
+    /// <summary>
+    /// JSON serializer options for deserializing API responses
+    /// </summary>
     private readonly JsonSerializerOptions _jsonOptions;
 
     /// <summary>
@@ -54,7 +69,7 @@ public class OtakuGifsClient : IDisposable
     /// <param name="format">The image format (defaults to GIF)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The response containing the GIF URL</returns>
-    public async Task<OtakugifsResponse> GetGifAsync(
+    public async Task<OtakuGifsResponse> GetGifAsync(
         OtakuGifReaction reaction,
         OtakuGifFormat format = OtakuGifFormat.GIF,
         CancellationToken cancellationToken = default)
@@ -73,7 +88,7 @@ public class OtakuGifsClient : IDisposable
             }
 
             var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var result = JsonSerializer.Deserialize<OtakugifsResponse>(content, _jsonOptions);
+            var result = JsonSerializer.Deserialize<OtakuGifsResponse>(content, _jsonOptions);
 
             if (result == null)
             {
@@ -130,11 +145,22 @@ public class OtakuGifsClient : IDisposable
         }
     }
 
+    /// <summary>
+    /// Internal response model for the all reactions API endpoint
+    /// </summary>
     private class AllReactionsResponse
     {
+        /// <summary>
+        /// Array of available reaction names
+        /// </summary>
         public string[] Reactions { get; set; } = null!;
     }
 
+    /// <summary>
+    /// Handles error responses from the API and throws appropriate exceptions
+    /// </summary>
+    /// <param name="response">The HTTP response message</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     private async Task HandleErrorResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         var statusCode = (int)response.StatusCode;
