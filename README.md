@@ -167,6 +167,8 @@ Task<OtakuGifsResponse> GetGifAsync(
 
 Fetches all available reactions from the API.
 
+> **Note:** This method is provided for completeness. Since `GetGifAsync` uses the type-safe `OtakuGifReaction` enum which already includes all possible reactions, you typically won't need to call this method. If you discover new reactions available in the API, feel free to open a PR to add them to the enum!
+
 ```csharp
 Task<string[]> GetAllReactionsAsync(
     CancellationToken cancellationToken = default
