@@ -15,9 +15,12 @@ try
     var kissGif = await client.GetGifAsync(OtakuGifReaction.Kiss);
     Console.WriteLine($"Kiss GIF URL: {kissGif.Url}\n");
 
-    // Example 2: Get a hug GIF in WebP format
-    Console.WriteLine("Example 2: Fetching a hug GIF in WebP format...");
-    var hugGif = await client.GetGifAsync(OtakuGifReaction.Hug, OtakuGifFormat.WebP);
+    // Example 2: Get a hug GIF in WebP format (using fluent API)
+    Console.WriteLine("Example 2: Fetching a hug GIF in WebP format using fluent API...");
+    var hugGif = await client.Request()
+        .WithReaction(OtakuGifReaction.Hug)
+        .WithFormat(OtakuGifFormat.WebP)
+        .ExecuteAsync();
     Console.WriteLine($"Hug GIF URL: {hugGif.Url}\n");
 
     // Example 3: Get a pat GIF in AVIF format
@@ -31,8 +34,8 @@ try
     Console.WriteLine($"Total reactions available: {reactions.Length}");
     Console.WriteLine($"Sample reactions: {string.Join(", ", reactions.Take(10))}...\n");
 
-    // Example 5: Try multiple reactions
-    Console.WriteLine("Example 5: Fetching multiple random reactions...");
+    // Example 5: Try multiple reactions using fluent API
+    Console.WriteLine("Example 5: Fetching multiple random reactions using fluent API...");
     var randomReactions = new[]
     {
         OtakuGifReaction.Happy,
@@ -44,7 +47,9 @@ try
 
     foreach (var reaction in randomReactions)
     {
-        var gif = await client.GetGifAsync(reaction);
+        var gif = await client.Request()
+            .WithReaction(reaction)
+            .ExecuteAsync();
         Console.WriteLine($"{reaction}: {gif.Url}");
     }
 

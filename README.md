@@ -17,9 +17,10 @@ dotnet add package OtakuGifs
 
 - Fully async/await API
 - Type-safe reaction and format enums
+- Fluent API for building requests
+- Built-in dependency injection support
 - Comprehensive error handling
-- Supports .NET Standard 2.0+
-- Dependency injection friendly
+- Supports .NET Standard 2.0+ (.NET Framework 4.6.1+, .NET Core 2.0+, .NET 5+)
 - Cancellation token support
 
 ## Quick Start
@@ -60,27 +61,62 @@ var gif = await client.GetGifAsync(OtakuGifReaction.Wave);
 Console.WriteLine($"GIF URL: {gif.Url}");
 ```
 
-### With Custom HttpClient (Dependency Injection)
+### Fluent API
 
 ```csharp
+using var client = new OtakuGifsClient();
+
+// Build requests using fluent syntax
+var gif = await client.Request()
+    .WithReaction(OtakuGifReaction.Kiss)
+    .WithFormat(OtakuGifFormat.WebP)
+    .ExecuteAsync();
+
+Console.WriteLine($"GIF URL: {gif.Url}");
+```
+
+### Dependency Injection (ASP.NET Core, etc.)
+
+```csharp
+// In Program.cs or Startup.cs
+services.AddOtakuGifsClient();
+
+// In your service/controller
 public class MyService
 {
-    private readonly OtakuGifsClient _client;
+    private readonly IOtakuGifsClient _client;
 
-    public MyService(HttpClient httpClient)
+    public MyService(IOtakuGifsClient client)
     {
-        _client = new OtakuGifsClient(httpClient, disposeHttpClient: false);
+        _client = client;
     }
 
     public async Task<string> GetRandomKissGifAsync()
     {
+        // Use direct method
         var result = await _client.GetGifAsync(OtakuGifReaction.Kiss);
         return result.Url;
+
+        // Or use fluent API
+        var result2 = await _client.Request()
+            .WithReaction(OtakuGifReaction.Hug)
+            .WithFormat(OtakuGifFormat.GIF)
+            .ExecuteAsync();
+        return result2.Url;
     }
 }
+```
 
-// In your DI container
-services.AddHttpClient<MyService>();
+### Custom HttpClient Configuration (Advanced DI)
+
+```csharp
+// Configure the HttpClient used by OtakuGifs
+services.AddOtakuGifsClient()
+    .ConfigureHttpClient(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(10);
+    })
+    .AddPolicyHandler(GetRetryPolicy()); // Add Polly policies, etc.
 ```
 
 ### With Cancellation Token
@@ -151,7 +187,9 @@ The library includes 76+ reaction types:
 
 ## API Reference
 
-### `GetGifAsync`
+### Client Methods
+
+#### `GetGifAsync`
 
 Fetches a random GIF based on the specified reaction.
 
@@ -163,7 +201,7 @@ Task<OtakuGifsResponse> GetGifAsync(
 )
 ```
 
-### `GetAllReactionsAsync`
+#### `GetAllReactionsAsync`
 
 Fetches all available reactions from the API.
 
@@ -173,6 +211,40 @@ Fetches all available reactions from the API.
 Task<string[]> GetAllReactionsAsync(
     CancellationToken cancellationToken = default
 )
+```
+
+#### `Request`
+
+Creates a fluent request builder for constructing GIF requests.
+
+```csharp
+GifRequestBuilder Request()
+```
+
+### Fluent API Methods
+
+#### `WithReaction`
+
+Specifies the reaction type for the request.
+
+```csharp
+GifRequestBuilder WithReaction(OtakuGifReaction reaction)
+```
+
+#### `WithFormat`
+
+Specifies the format for the request.
+
+```csharp
+GifRequestBuilder WithFormat(OtakuGifFormat format)
+```
+
+#### `ExecuteAsync`
+
+Executes the request with the configured parameters.
+
+```csharp
+Task<OtakuGifsResponse> ExecuteAsync(CancellationToken cancellationToken = default)
 ```
 
 ## License

@@ -1,14 +1,16 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Moq.Protected;
 using OtakuGifs.Client;
 using OtakuGifs.Enums;
 using OtakuGifs.Exceptions;
+using OtakuGifs.Extensions;
 using OtakuGifs.Models;
 using Xunit;
 
@@ -159,6 +161,145 @@ public class OtakuGifsClientTests
 
         // Assert
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await httpClient.GetAsync("test"));
+    }
+
+    [Fact]
+    public async Task FluentAPI_WithReactionAndFormat_ReturnsValidResponse()
+    {
+        // Arrange
+        var expectedUrl = "https://cdn.otakugifs.xyz/gifs/kiss/test.webp";
+        var response = new OtakuGifsResponse { Url = expectedUrl };
+        var httpClient = CreateMockHttpClient(HttpStatusCode.OK, JsonSerializer.Serialize(response));
+        var client = new OtakuGifsClient(httpClient);
+
+        // Act
+        var result = await client.Request()
+            .WithReaction(OtakuGifReaction.Kiss)
+            .WithFormat(OtakuGifFormat.WebP)
+            .ExecuteAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedUrl, result.Url);
+    }
+
+    [Fact]
+    public async Task FluentAPI_WithoutReaction_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var httpClient = CreateMockHttpClient(HttpStatusCode.OK, "{}");
+        var client = new OtakuGifsClient(httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await client.Request().ExecuteAsync());
+    }
+
+    [Fact]
+    public async Task FluentAPI_WithOnlyReaction_UsesDefaultFormat()
+    {
+        // Arrange
+        var expectedUrl = "https://cdn.otakugifs.xyz/gifs/hug/test.gif";
+        var response = new OtakuGifsResponse { Url = expectedUrl };
+        var mockHandler = new Mock<HttpMessageHandler>();
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.RequestUri!.ToString().Contains("format=gif")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(JsonSerializer.Serialize(response))
+            });
+
+        var httpClient = new HttpClient(mockHandler.Object)
+        {
+            BaseAddress = new Uri("https://api.otakugifs.xyz")
+        };
+        var client = new OtakuGifsClient(httpClient);
+
+        // Act
+        var result = await client.Request()
+            .WithReaction(OtakuGifReaction.Hug)
+            .ExecuteAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(req =>
+                req.RequestUri!.ToString().Contains("format=gif")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public void DependencyInjection_AddOtakuGifsClient_RegistersClient()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddOtakuGifsClient();
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var client = serviceProvider.GetService<IOtakuGifsClient>();
+        Assert.NotNull(client);
+        Assert.IsType<OtakuGifsClient>(client);
+    }
+
+    [Fact]
+    public void DependencyInjection_AddOtakuGifsClient_ConfiguresHttpClient()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddOtakuGifsClient();
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetService<IOtakuGifsClient>();
+
+        // Assert
+        Assert.NotNull(client);
+        // Client should be usable
+        Assert.IsAssignableFrom<IOtakuGifsClient>(client);
+    }
+
+    [Fact]
+    public void DependencyInjection_CanResolveMultipleTimes()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddOtakuGifsClient();
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Act
+        var client1 = serviceProvider.GetService<IOtakuGifsClient>();
+        var client2 = serviceProvider.GetService<IOtakuGifsClient>();
+
+        // Assert
+        Assert.NotNull(client1);
+        Assert.NotNull(client2);
+        // Typed clients are transient by default, so they should be different instances
+        Assert.NotSame(client1, client2);
+    }
+
+    [Fact]
+    public void Interface_ImplementsAllRequiredMethods()
+    {
+        // Arrange
+        var httpClient = CreateMockHttpClient(HttpStatusCode.OK, "{}");
+        IOtakuGifsClient client = new OtakuGifsClient(httpClient);
+
+        // Assert - verify interface methods are available
+        Assert.NotNull(client.GetGifAsync);
+        Assert.NotNull(client.GetAllReactionsAsync);
+        Assert.NotNull(client.Request);
+        Assert.IsAssignableFrom<IDisposable>(client);
     }
 
     private HttpClient CreateMockHttpClient(HttpStatusCode statusCode, string content)

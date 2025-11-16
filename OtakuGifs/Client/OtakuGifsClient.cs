@@ -12,7 +12,7 @@ namespace OtakuGifs.Client;
 /// <summary>
 /// Client for interacting with the OtakuGIFs API
 /// </summary>
-public class OtakuGifsClient : IDisposable
+public class OtakuGifsClient : IOtakuGifsClient
 {
     /// <summary>
     /// Base URL for the OtakuGIFs API
@@ -143,6 +143,15 @@ public class OtakuGifsClient : IDisposable
         {
             throw new OtakuGifsException("Request timed out", ex);
         }
+    }
+
+    /// <summary>
+    /// Creates a new fluent request builder for constructing GIF requests
+    /// </summary>
+    /// <returns>A new instance of GifRequestBuilder</returns>
+    public GifRequestBuilder Request()
+    {
+        return new GifRequestBuilder(this);
     }
 
     /// <summary>
