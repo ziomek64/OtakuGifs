@@ -1,4 +1,6 @@
-﻿using OtakuGifs.Client;
+﻿using System;
+using System.Linq;
+using OtakuGifs.Client;
 using OtakuGifs.Enums;
 using OtakuGifs.Exceptions;
 
