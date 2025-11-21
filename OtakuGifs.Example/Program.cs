@@ -74,5 +74,9 @@ catch (Exception ex)
     Console.WriteLine($"Unexpected error: {ex.Message}");
 }
 
-Console.WriteLine("\nPress any key to exit...");
-Console.ReadKey();
+// Only wait for key press if not running in CI
+if (Environment.GetEnvironmentVariable("CI") == null)
+{
+    Console.WriteLine("\nPress any key to exit...");
+    Console.ReadKey();
+}

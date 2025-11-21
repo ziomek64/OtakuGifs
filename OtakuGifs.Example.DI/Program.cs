@@ -30,8 +30,12 @@ var host = Host.CreateDefaultBuilder(args)
 var gifService = host.Services.GetRequiredService<GifService>();
 await gifService.RunAsync();
 
-Console.WriteLine("\nPress any key to exit...");
-Console.ReadKey();
+// Only wait for key press if not running in CI
+if (Environment.GetEnvironmentVariable("CI") == null)
+{
+    Console.WriteLine("\nPress any key to exit...");
+    Console.ReadKey();
+}
 
 /// <summary>
 /// Example service that uses IOtakuGifsClient via dependency injection
